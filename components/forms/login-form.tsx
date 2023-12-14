@@ -17,10 +17,14 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { handleSubmitForm } from "@/lib/actions";
 import { userAuthSchema } from "@/lib/validations/auth";
+import { useState } from "react";
+import Link from "next/link";
 
 export type LoginFormSchema = z.infer<typeof userAuthSchema>;
 
-export default function LoginForm({}) {
+export default function LoginForm() {
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(userAuthSchema),
     defaultValues: {
@@ -30,12 +34,17 @@ export default function LoginForm({}) {
   });
 
   const onFormSubmit = async (data: LoginFormSchema) => {
+    setLoading(true);
     await handleSubmitForm(data);
+    setLoading(false);
     return toast.success("Login is Sucessfull!");
   };
 
   return (
-    <form onSubmit={form.handleSubmit((data) => onFormSubmit(data))}>
+    <form
+      onSubmit={form.handleSubmit((data) => onFormSubmit(data))}
+      className="flex items-center flex-col"
+    >
       <Card className="w-[350px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
@@ -64,9 +73,14 @@ export default function LoginForm({}) {
           </div>
         </CardContent>
         <CardFooter className="flex-col">
-          <Button className="w-full">Sign In</Button>
+          <Button className="w-full">
+            {!loading ? "Sign In" : "Loading..."}
+          </Button>
         </CardFooter>
       </Card>
+      <Link href="/register" className="underline text-center mt-4">
+        Don{"'"}t have an account? <span className="font-medium">Sign Up</span>
+      </Link>
     </form>
   );
 }

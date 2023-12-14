@@ -17,10 +17,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { handleSubmitRegisterUserForm } from "@/lib/actions";
 import { userFormSchema } from "@/lib/validations/user";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export type RegisterFormSchema = z.infer<typeof userFormSchema>;
 
 export default function RegisterForm() {
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
   const { register, handleSubmit } = useForm<RegisterFormSchema>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -32,12 +38,16 @@ export default function RegisterForm() {
   });
 
   const onFormSubmit = async (data: RegisterFormSchema) => {
+    setLoading(true);
     const result = await handleSubmitRegisterUserForm(data);
 
     if (result.status === 200) {
+      setLoading(false);
+      router.push("/login");
       toast.success("Successfully register user!");
       return;
     }
+    setLoading(false);
     return toast.error("An error occurred when trying to create user!");
   };
   return (
@@ -88,7 +98,9 @@ export default function RegisterForm() {
           </div>
         </CardContent>
         <CardFooter className="flex-col">
-          <Button className="w-full">Sign Up</Button>
+          <Button className="w-full">
+            {loading ? "Loading..." : "Sign Up"}
+          </Button>
         </CardFooter>
       </Card>
     </form>
